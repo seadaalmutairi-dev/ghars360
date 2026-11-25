@@ -2682,8 +2682,8 @@ function teacherTab(tab) {
     <div class="card"><h3>إضافة طالبة</h3><form data-form="addStudent" class="grid"><label class="f">الاسم التعريفي المعتمد<input name="n" required maxlength="60"></label><label class="f">الفصل<select name="cls">${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}">${esc(c.n)}</option>`).join('')}</select></label><button class="btn sm">إضافة</button></form>
     <h3 style="margin-top:14px">استيراد قائمة معتمدة</h3><form data-form="import" class="grid"><label class="f">الصقي الأسماء، اسمًا في كل سطر<textarea name="list" placeholder="اسم الطالبة الأولى&#10;اسم الطالبة الثانية"></textarea></label><label class="f">الفصل<select name="cls">${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}">${esc(c.n)}</option>`).join('')}</select></label><button class="btn sm ghost">استيراد</button></form></div>
     <div class="card" style="grid-column:1/-1"><div class="row"><h3 style="margin:0">قائمة الطالبات</h3><span class="sp"></span>${LIVE ? `<button class="btn sm gold" data-act="codes">${ic('print')} بطاقات دخول الطالبات</button>` : ''}</div><div class="scroll"><table class="stack"><thead><tr><th>الاسم</th>${LIVE ? '<th>رمز الدخول</th>' : ''}<th>الفصل</th><th class="n">القيم المبدوءة</th><th class="n">المراحل المنجزة</th><th class="n">شواهد معتمدة</th></tr></thead><tbody>
-    ${scope().map(s => `<tr><td>${esc(s.n)}</td>${LIVE ? `<td style="direction:ltr;font-weight:700;letter-spacing:.1em">${esc(s.code || '…')}</td>` : ''}<td>${esc(clsName(s.cls))}</td><td class="n">${AR(VALUES.filter(v => P(s.id, v.id) && P(s.id, v.id).started).length)}</td><td class="n">${AR(VALUES.reduce((a, v) => a + doneCount(P(s.id, v.id)), 0))}</td><td class="n">${AR(S.evidence.filter(e => e.sid === s.id && e.status === 'approved').length)}</td></tr>`).join('')}</tbody></table></div>
-    <p class="tiny muted">الأعداد للمتابعة التربوية فقط، ولا تُستخدم لترتيب الطالبات أخلاقيًا.${LIVE ? ' رمز الدخول سري لكل طالبة؛ سلّميه لها وحدها.' : ''}</p></div></div>`;
+    ${scope().map(s => `<tr><td>${esc(s.n)}</td>${LIVE ? `<td style="direction:ltr;font-weight:700;letter-spacing:.1em">${esc(s.code || '…')}</td>` : ''}<td>${can('teach') ? `<select data-ch="stuCls" data-k="${s.id}" aria-label="نقل ${esc(s.n)} إلى فصل" style="min-width:170px">${s.cls && S.classes.some(c => c.id === s.cls) ? '' : '<option value="">— بلا فصل —</option>'}${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}" ${s.cls === c.id ? 'selected' : ''}>${esc(c.n)}</option>`).join('')}</select>` : esc(clsName(s.cls))}</td><td class="n">${AR(VALUES.filter(v => P(s.id, v.id) && P(s.id, v.id).started).length)}</td><td class="n">${AR(VALUES.reduce((a, v) => a + doneCount(P(s.id, v.id)), 0))}</td><td class="n">${AR(S.evidence.filter(e => e.sid === s.id && e.status === 'approved').length)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="tiny muted">لنقل طالبة إلى فصل آخر اختاري الفصل الجديد من عمود «الفصل»، فيُحفظ النقل فورًا. الأعداد للمتابعة التربوية فقط، ولا تُستخدم لترتيب الطالبات أخلاقيًا.${LIVE ? ' رمز الدخول سري لكل طالبة؛ سلّميه لها وحدها.' : ''}</p></div></div>`;
   if (tab === 'worlds') return `<div class="grid g2"><div class="card"><h3>تفعيل العوالم</h3>${VALUES.map(v => `<label class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><input type="checkbox" data-ch="actV" value="${v.id}" ${S.settings.activeValues.includes(v.id) ? 'checked' : ''}> <span style="color:${v.c}">${ic(v.ic)}</span> ${v.w} — ${v.n}</label>`).join('')}</div>
     <div class="card"><h3>قيمة الأسبوع</h3><select data-ch="weekV">${VALUES.map(v => `<option value="${v.id}" ${S.settings.weekValue === v.id ? 'selected' : ''}>${v.n}</option>`).join('')}</select>
     <h3 style="margin-top:14px">إنشاء موقف أو تحدٍّ جديد</h3><form data-form="newCh" class="grid"><label class="f">القيمة<select name="vid">${VALUES.map(v => `<option value="${v.id}">${v.n}</option>`).join('')}</select></label><label class="f">عنوان التحدي<input name="t" required maxlength="60"></label><label class="f">الوصف<textarea name="d" required maxlength="200"></textarea></label><label class="f">الدورية<select name="f"><option>يومي</option><option>أسبوعي</option><option>شهري</option></select></label><button class="btn sm">إضافة إلى العالم</button></form>
@@ -3390,6 +3390,7 @@ document.addEventListener('change', e => {
   if (c === 'toolSt') { S.tools.find(x => x.vid === el.dataset.k).st = v; audit('تحكيم أداة'); return after(); }
   if (c === 'ideaSt') { S.ideas.find(x => x.id === el.dataset.k).status = v; return after(); }
   if (c === 'riskSt') { S.risks[+el.dataset.k].st = v; return after(); }
+  if (c === 'stuCls') { const s = stuById(el.dataset.k); if (s && v) { s.cls = v; audit('نقل طالبة إلى ' + clsName(v)); after(); toast('نُقلت ' + s.n.split(' ')[0] + ' إلى ' + clsName(v)); } return; }
   if (c === 'names') { S.settings.showNamesOnMural = el.checked; return after(); }
 });
 document.addEventListener('input', e => { const el = e.target.closest('[data-ch="ev-q"]'); if (el) { (UI.filt.ev = UI.filt.ev || {}).q = el.value; clearTimeout(el._t); el._t = setTimeout(() => { render(); const i = $('[data-ch="ev-q"]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 400); } });
@@ -3502,7 +3503,7 @@ function snapshot() {
   S.ideas.forEach(x => { st['i' + x.id] = x.status; });
   return {P, st, ev: Object.fromEntries(S.evidence.map(e => [e.id, e.status + '|' + e.fb])), meta: JSON.stringify([S.d21[S.me] || null, S.capsule[S.me] || null]),
     rep: Object.fromEntries(S.inits.filter(i => i.by === S.me).map(i => [i.id, (i.ben || 0) + '|' + (i.report || '')])),
-    set: JSON.stringify(settingsDoc()), name: (curSchool() || {}).name};
+    set: JSON.stringify(settingsDoc()), name: (curSchool() || {}).name, cls: Object.fromEntries(S.students.map(s => [s.id, s.cls || '']))};
 }
 async function push() {
   if (!SNAP) return;
@@ -3527,6 +3528,7 @@ async function push() {
   } else if (isStaffRole()) {
     const sid = S.school;
     newOf(S.classes).forEach(c => calls.unshift(() => rq(sb.from('gh_classes').insert({id: (c.id = crypto.randomUUID()), school_id: sid, name: c.n}))));
+    S.students.filter(s => isUUID(s.id) && SNAP.cls[s.id] !== undefined && SNAP.cls[s.id] !== (s.cls || '') && isUUID(s.cls)).forEach(s => calls.push(() => rq(sb.from('gh_students').update({class_id: s.cls}).eq('id', s.id))));
     newOf(S.students).forEach(s => calls.push(() => rq(sb.from('gh_students').insert({school_id: sid, class_id: isUUID(s.cls) ? s.cls : null, name: s.n}))));
     S.evidence.filter(e => isUUID(e.id) && SNAP.ev[e.id] !== e.status + '|' + e.fb && e.status !== 'pending').forEach(e => calls.push(() => rq(sb.rpc('gh_review', {p_id: e.id, p_status: e.status, p_fb: e.fb}))));
     newOf(S.M).filter(m => m.src === 'teacher').forEach(m => calls.push(() => rq(sb.rpc('gh_t_measure', {p_student: m.sid, p_vid: m.vid, p_ph: m.ph, p_a: m.a, p_year: S.settings.year}))));
