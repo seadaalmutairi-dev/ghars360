@@ -2659,6 +2659,7 @@ function vFamily() {
 }
 
 /* ===== بوابة المعلمة ===== */
+const DEFAULT_CLASSES = [].concat(...['الأول','الثاني','الثالث'].map(g => Array.from({length: 9}, (_, i) => `${g} الثانوي ${i + 1}`)));
 function vTeacher() {
   const tab = UI.tab.teacher || 'review';
   const tabs = [['review','مراجعة الشواهد'],['students','الفصول والطالبات'],['worlds','العوالم والأنشطة'],['families','متابعة الأسر'],['obs','الملاحظات السلوكية'],['measure','متابعة القياس'],['sustain','متابعة الاستدامة'],['moder','الجدارية والمجلس والسفيرات'],['certs','الشهادات'],['library','مكتبة الأنشطة']];
@@ -2676,7 +2677,8 @@ function teacherTab(tab) {
      ${e.status !== 'approved' ? `<form data-form="review" data-id="${e.id}" class="grid" style="margin-top:8px"><label class="f">تغذية راجعة<input name="fb" maxlength="200" value="${esc(e.fb)}"></label><div class="row"><button class="btn sm" name="d" value="approved">${ic('check')} اعتماد ومنح بصمة المدرسة</button><button class="btn sm ghost" name="d" value="needs">يحتاج إلى استكمال</button></div></form>` : `<div class="small" style="margin-top:6px"><b>التغذية:</b> ${esc(e.fb)}</div>`}</div>`).join('') || `<p class="muted">${NOINFO}</p>`}</div>`;
   }
   if (tab === 'students') return `<div class="grid g2"><div class="card"><h3>الفصول</h3>${S.classes.filter(c => c.sch === S.school).map(c => `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${esc(c.n)}</b><span class="sp chip">${AR(S.students.filter(s => s.cls === c.id).length)} طالبة</span></div>`).join('')}
-    <form data-form="addClass" class="row" style="margin-top:10px"><input name="n" placeholder="اسم الفصل" required style="flex:1" maxlength="40"><button class="btn sm">إضافة فصل</button></form></div>
+    <form data-form="addClass" class="row" style="margin-top:10px"><input name="n" placeholder="اسم الفصل" required style="flex:1" maxlength="40"><button class="btn sm">إضافة فصل</button></form>
+    ${(() => { const miss = DEFAULT_CLASSES.filter(n => !S.classes.some(c => c.sch === S.school && c.n === n)).length; return miss ? `<div class="notice" style="margin-top:12px">${S.classes.some(c => c.sch === S.school) ? '' : 'لا توجد فصول بعد؛ أضيفي الفصول أولًا ليظهر اختيار الفصل. '}<button class="btn sm gold" data-act="defClasses" style="margin-top:6px">إضافة الفصول الافتراضية (${AR(miss)} فصلًا)</button><div class="tiny muted" style="margin-top:4px">الأول والثاني والثالث الثانوي، من ١ إلى ٩ لكل صف.</div></div>` : ''; })()}</div>
     <div class="card"><h3>إضافة طالبة</h3><form data-form="addStudent" class="grid"><label class="f">الاسم التعريفي المعتمد<input name="n" required maxlength="60"></label><label class="f">الفصل<select name="cls">${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}">${esc(c.n)}</option>`).join('')}</select></label><button class="btn sm">إضافة</button></form>
     <h3 style="margin-top:14px">استيراد قائمة معتمدة</h3><form data-form="import" class="grid"><label class="f">الصقي الأسماء، اسمًا في كل سطر<textarea name="list" placeholder="اسم الطالبة الأولى&#10;اسم الطالبة الثانية"></textarea></label><label class="f">الفصل<select name="cls">${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}">${esc(c.n)}</option>`).join('')}</select></label><button class="btn sm ghost">استيراد</button></form></div>
     <div class="card" style="grid-column:1/-1"><div class="row"><h3 style="margin:0">قائمة الطالبات</h3><span class="sp"></span>${LIVE ? `<button class="btn sm gold" data-act="codes">${ic('print')} بطاقات دخول الطالبات</button>` : ''}</div><div class="scroll"><table class="stack"><thead><tr><th>الاسم</th>${LIVE ? '<th>رمز الدخول</th>' : ''}<th>الفصل</th><th class="n">القيم المبدوءة</th><th class="n">المراحل المنجزة</th><th class="n">شواهد معتمدة</th></tr></thead><tbody>
@@ -3303,6 +3305,7 @@ const ACT = {
     const a = UI.ans[key] || []; if (VBY[vid].items.some((_, i) => a[i] == null)) return toast('أجيبي عن البنود الخمسة (يمكن اختيار «لم تتح فرصة»)');
     if (a.filter(x => x > 0).length < 3) toast('ملاحظة: أقل من ثلاث إجابات صالحة؛ لن تُحتسب في المتوسط');
     S.M = S.M.filter(m => !(m.sid === sid && m.vid === vid && m.ph === ph && m.src === src)); S.M.push({id: uid('m'), sid, vid, ph, src, a: a.slice(0, 5), at: Date.now()}); audit('ملاحظة ' + (src === 'family' ? 'أسرية' : 'معلمة')); after(); toast('حُفظت الملاحظة'); },
+  defClasses: () => { let n = 0; DEFAULT_CLASSES.forEach(c => { if (!S.classes.some(x => x.sch === S.school && x.n === c)) { S.classes.push({id: uid('c'), n: c, sch: S.school}); n++; } }); audit('إضافة الفصول الافتراضية'); after(); toast('أُضيف ' + AR(n) + ' فصلًا'); },
   tour: () => tour(0)
 };
 const TOUR = [['مرحبًا بك في غَرْس 360','منصة تحول القيم إلى ممارسات. هذه جولة قصيرة.'],['مدينة غَرْس','في «العوالم» تسع بوابات، لكل قيمة عالم بتسع مراحل.'],['شجرة الأثر','تنمو شجرتك بإنجازاتك الفعلية المعتمدة.'],['البصمات الأربع','الطالبة والأسرة والمدرسة والاستدامة.'],['تبديل الدور','للتجربة: بدّلي الدور من أعلى الصفحة لرؤية بوابات الأسرة والمعلمة والقيادة.']];
@@ -3471,6 +3474,7 @@ async function sync() {
     const [sch, cls, stu, prg, mea, evi, inv, nts, fol, pst, ntf, aud, crt, prof] = await Promise.all(['gh_schools','gh_classes','gh_students','gh_progress','gh_measures','gh_evidence','gh_invites','gh_notes','gh_follow','gh_posts','gh_notifs','gh_audit','gh_certs','gh_profiles'].map(safe));
     const row = sch.find(x => x.id === S.school); if (row) { applySettings(row.settings); const s = S.schools.find(x => x.id === row.id); if (s) s.name = row.name; }
     S.classes = cls.map(c => ({id: c.id, n: c.name, sch: c.school_id}));
+    const ord = n => { const i = DEFAULT_CLASSES.indexOf(n); return i < 0 ? 999 : i; }; S.classes.sort((a, b) => ord(a.n) - ord(b.n) || a.n.localeCompare(b.n, 'ar', {numeric: true}));
     S.students = stu.map(s => ({id: s.id, n: s.name, cls: s.class_id, sch: s.school_id, code: s.code, active: s.active}));
     prg.forEach(r => { (S.P[r.student_id] = S.P[r.student_id] || {})[r.vid] = normP(r.data, r.started_at); });
     S.M = mea.map(m => ({id: m.id, sid: m.student_id, vid: m.vid, ph: m.ph, src: m.src, a: m.a, at: ts(m.created_at)}));
