@@ -2659,10 +2659,11 @@ function vFamily() {
 }
 
 /* ===== بوابة المعلمة ===== */
+const canDelStu = () => ['supervisor','principal','sysadmin'].includes(S.role);
 const DEFAULT_CLASSES = [].concat(...['الأول','الثاني','الثالث'].map(g => Array.from({length: 9}, (_, i) => `${g} الثانوي ${i + 1}`)));
 function vTeacher() {
   const tab = UI.tab.teacher || 'review';
-  const tabs = [['review','مراجعة الشواهد'],['students','الفصول والطالبات'],['worlds','العوالم والأنشطة'],['families','متابعة الأسر'],['obs','الملاحظات السلوكية'],['measure','متابعة القياس'],['sustain','متابعة الاستدامة'],['moder','الجدارية والمجلس والسفيرات'],['certs','الشهادات'],['library','مكتبة الأنشطة']];
+  const tabs = [['review','مراجعة الشواهد'],['students','الفصول والطالبات'],['worlds','العوالم والأنشطة'],['families','متابعة الأسر'],['obs','الملاحظات السلوكية'],['measure','متابعة القياس'],['sustain','متابعة الاستدامة'],['moder','الجدارية والمجلس والسفيرات'],['manage','إدارة المشاركات والحذف'],['certs','الشهادات'],['library','مكتبة الأنشطة']];
   return `<div class="wrap band"><div class="sec"><h1 style="margin:0">بوابة المعلمة</h1>${demoTag()}</div>
   <div class="tabs" role="tablist">${tabs.map(t => `<button class="${tab === t[0] ? 'on' : ''}" data-act="tab" data-g="teacher" data-t="${t[0]}" role="tab" aria-selected="${tab === t[0]}">${t[1]}</button>`).join('')}</div>${teacherTab(tab)}</div>`;
 }
@@ -2676,13 +2677,13 @@ function teacherTab(tab) {
      <p style="margin:8px 0">${esc(e.text)}</p><div class="small muted">${esc(e.type)}${e.file && !e.path ? ' · ' + esc(e.file) : ''} · ${hijri(new Date(e.at))}${e.path ? ` <button class="btn sm ghost" data-act="evFile" data-p="${esc(e.path)}">${ic('eye')} عرض المرفق</button>` : ''}</div>
      ${e.status !== 'approved' ? `<form data-form="review" data-id="${e.id}" class="grid" style="margin-top:8px"><label class="f">تغذية راجعة<input name="fb" maxlength="200" value="${esc(e.fb)}"></label><div class="row"><button class="btn sm" name="d" value="approved">${ic('check')} اعتماد ومنح بصمة المدرسة</button><button class="btn sm ghost" name="d" value="needs">يحتاج إلى استكمال</button></div></form>` : `<div class="small" style="margin-top:6px"><b>التغذية:</b> ${esc(e.fb)}</div>`}</div>`).join('') || `<p class="muted">${NOINFO}</p>`}</div>`;
   }
-  if (tab === 'students') return `<div class="grid g2"><div class="card"><h3>الفصول</h3>${S.classes.filter(c => c.sch === S.school).map(c => `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${esc(c.n)}</b><span class="sp chip">${AR(S.students.filter(s => s.cls === c.id).length)} طالبة</span></div>`).join('')}
+  if (tab === 'students') return `<div class="grid g2"><div class="card"><h3>الفصول</h3><div style="max-height:420px;overflow:auto">${S.classes.filter(c => c.sch === S.school).map(c => `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${esc(c.n)}</b><span class="sp chip">${AR(S.students.filter(s => s.cls === c.id).length)} طالبة</span>${canDelStu() ? `<button class="btn sm ghost" data-act="delCls" data-k="${c.id}" aria-label="حذف ${esc(c.n)}">${ic('x', 16)}</button>` : ''}</div>`).join('') || '<p class="muted small">لا توجد فصول.</p>'}</div>
     <form data-form="addClass" class="row" style="margin-top:10px"><input name="n" placeholder="اسم الفصل" required style="flex:1" maxlength="40"><button class="btn sm">إضافة فصل</button></form>
     ${(() => { const miss = DEFAULT_CLASSES.filter(n => !S.classes.some(c => c.sch === S.school && c.n === n)).length; return miss ? `<div class="notice" style="margin-top:12px">${S.classes.some(c => c.sch === S.school) ? '' : 'لا توجد فصول بعد؛ أضيفي الفصول أولًا ليظهر اختيار الفصل. '}<button class="btn sm gold" data-act="defClasses" style="margin-top:6px">إضافة الفصول الافتراضية (${AR(miss)} فصلًا)</button><div class="tiny muted" style="margin-top:4px">الأول والثاني والثالث الثانوي، من ١ إلى ٩ لكل صف.</div></div>` : ''; })()}</div>
     <div class="card"><h3>إضافة طالبة</h3><form data-form="addStudent" class="grid"><label class="f">الاسم التعريفي المعتمد<input name="n" required maxlength="60"></label><label class="f">الفصل<select name="cls">${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}">${esc(c.n)}</option>`).join('')}</select></label><button class="btn sm">إضافة</button></form>
     <h3 style="margin-top:14px">استيراد قائمة معتمدة</h3><form data-form="import" class="grid"><label class="f">الصقي الأسماء، اسمًا في كل سطر<textarea name="list" placeholder="اسم الطالبة الأولى&#10;اسم الطالبة الثانية"></textarea></label><label class="f">الفصل<select name="cls">${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}">${esc(c.n)}</option>`).join('')}</select></label><button class="btn sm ghost">استيراد</button></form></div>
-    <div class="card" style="grid-column:1/-1"><div class="row"><h3 style="margin:0">قائمة الطالبات</h3><span class="sp"></span>${LIVE ? `<button class="btn sm gold" data-act="codes">${ic('print')} بطاقات دخول الطالبات</button>` : ''}</div><div class="scroll"><table class="stack"><thead><tr><th>الاسم</th>${LIVE ? '<th>رمز الدخول</th>' : ''}<th>الفصل</th><th class="n">القيم المبدوءة</th><th class="n">المراحل المنجزة</th><th class="n">شواهد معتمدة</th></tr></thead><tbody>
-    ${scope().map(s => `<tr><td>${esc(s.n)}</td>${LIVE ? `<td style="direction:ltr;font-weight:700;letter-spacing:.1em">${esc(s.code || '…')}</td>` : ''}<td>${can('teach') ? `<select data-ch="stuCls" data-k="${s.id}" aria-label="نقل ${esc(s.n)} إلى فصل" style="min-width:170px">${s.cls && S.classes.some(c => c.id === s.cls) ? '' : '<option value="">— بلا فصل —</option>'}${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}" ${s.cls === c.id ? 'selected' : ''}>${esc(c.n)}</option>`).join('')}</select>` : esc(clsName(s.cls))}</td><td class="n">${AR(VALUES.filter(v => P(s.id, v.id) && P(s.id, v.id).started).length)}</td><td class="n">${AR(VALUES.reduce((a, v) => a + doneCount(P(s.id, v.id)), 0))}</td><td class="n">${AR(S.evidence.filter(e => e.sid === s.id && e.status === 'approved').length)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="card" style="grid-column:1/-1"><div class="row"><h3 style="margin:0">قائمة الطالبات</h3><select data-ch="stuF" style="max-width:220px" aria-label="تصفية حسب الفصل"><option value="">كل الفصول (${AR(scope().length)})</option><option value="none" ${UI.stuF === 'none' ? 'selected' : ''}>بلا فصل</option>${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}" ${UI.stuF === c.id ? 'selected' : ''}>${esc(c.n)} (${AR(S.students.filter(s => s.cls === c.id).length)})</option>`).join('')}</select><span class="sp"></span>${LIVE ? `<button class="btn sm gold" data-act="codes">${ic('print')} بطاقات دخول الطالبات</button>` : ''}</div><div class="scroll"><table class="stack"><thead><tr><th>الاسم</th>${LIVE ? '<th>رمز الدخول</th>' : ''}<th>الفصل</th><th class="n">القيم المبدوءة</th><th class="n">المراحل المنجزة</th><th class="n">شواهد معتمدة</th>${canDelStu() ? '<th></th>' : ''}</tr></thead><tbody>
+    ${scope().filter(s => !UI.stuF || (UI.stuF === 'none' ? !S.classes.some(c => c.id === s.cls) : s.cls === UI.stuF)).map(s => `<tr><td>${esc(s.n)}</td>${LIVE ? `<td style="direction:ltr;font-weight:700;letter-spacing:.1em">${esc(s.code || '…')}</td>` : ''}<td>${can('teach') ? `<select data-ch="stuCls" data-k="${s.id}" aria-label="نقل ${esc(s.n)} إلى فصل" style="min-width:170px">${s.cls && S.classes.some(c => c.id === s.cls) ? '' : '<option value="">— بلا فصل —</option>'}${S.classes.filter(c => c.sch === S.school).map(c => `<option value="${c.id}" ${s.cls === c.id ? 'selected' : ''}>${esc(c.n)}</option>`).join('')}</select>` : esc(clsName(s.cls))}</td><td class="n">${AR(VALUES.filter(v => P(s.id, v.id) && P(s.id, v.id).started).length)}</td><td class="n">${AR(VALUES.reduce((a, v) => a + doneCount(P(s.id, v.id)), 0))}</td><td class="n">${AR(S.evidence.filter(e => e.sid === s.id && e.status === 'approved').length)}</td>${canDelStu() ? `<td><button class="btn sm ghost" data-act="delStu" data-k="${s.id}" aria-label="حذف ${esc(s.n)}">${ic('x', 16)} حذف</button></td>` : ''}</tr>`).join('')}</tbody></table></div>
     <p class="tiny muted">لنقل طالبة إلى فصل آخر اختاري الفصل الجديد من عمود «الفصل»، فيُحفظ النقل فورًا. الأعداد للمتابعة التربوية فقط، ولا تُستخدم لترتيب الطالبات أخلاقيًا.${LIVE ? ' رمز الدخول سري لكل طالبة؛ سلّميه لها وحدها.' : ''}</p></div></div>`;
   if (tab === 'worlds') return `<div class="grid g2"><div class="card"><h3>تفعيل العوالم</h3>${VALUES.map(v => `<label class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><input type="checkbox" data-ch="actV" value="${v.id}" ${S.settings.activeValues.includes(v.id) ? 'checked' : ''}> <span style="color:${v.c}">${ic(v.ic)}</span> ${v.w} — ${v.n}</label>`).join('')}</div>
     <div class="card"><h3>قيمة الأسبوع</h3><select data-ch="weekV">${VALUES.map(v => `<option value="${v.id}" ${S.settings.weekValue === v.id ? 'selected' : ''}>${v.n}</option>`).join('')}</select>
@@ -2711,11 +2712,34 @@ function teacherTab(tab) {
     <div class="card"><h3>مبادرات السفيرات</h3>${pi.map(i => row(`<b>${esc(i.t)}</b> — ${esc(i.goals)}`, 'modInit', i.id)).join('') || '<p class="muted">لا شيء بانتظار المراجعة</p>'}
      <h3 style="margin-top:12px">بنك الأفكار</h3>${S.ideas.map(i => `<div class="row small" style="padding:4px 0"><span style="flex:1">${esc(i.text)}</span><select data-ch="ideaSt" data-k="${i.id}" style="max-width:160px">${['مقترحة','قيد المراجعة','معتمدة','تحولت إلى نشاط'].map(s => `<option ${i.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>`).join('')}</div></div>`;
   }
+  if (tab === 'manage') return manageTab();
   if (tab === 'certs') return `<div class="card"><h3>إصدار شهادة</h3><form data-form="cert" class="grid g2"><label class="f">نوع الشهادة<select name="c">${CERTS.map((c, i) => `<option value="${i}">${c}</option>`).join('')}</select></label><label class="f">اسم المستفيد<input name="n" required maxlength="80"></label><label class="f" style="grid-column:1/-1">العبارة<input name="t" maxlength="160" value="تقديرًا لمشاركتها المتميزة في مبادرة غَرْس 360 للقيم الإيجابية"></label><button class="btn" style="grid-column:1/-1">${ic('award')} معاينة وتنزيل</button></form>
    <p class="tiny muted">تُصدر الشهادات بعد استيفاء المعايير المحددة، ولا تُستخدم لتصنيف أخلاق الطالبات. يضاف رمز التحقق عند تشغيل نظام تحقق فعلي.</p>
    <h3 style="margin-top:14px">الشهادات الصادرة</h3>${S.certs.map(c => `<div class="small">${esc(CERTS[c.c])} — ${esc(c.n)} — ${esc(c.ref)}</div>`).join('') || '<p class="muted small">لا توجد بعد</p>'}</div>`;
   return `<div class="grid g3">${S.library.map(l => `<div class="card"><span class="chip">${l.k}</span><h3 style="margin-top:8px">${esc(l.t)}</h3><p class="small">${esc(l.d)}</p></div>`).join('')}</div>
    <form data-form="lib" class="card grid g2" style="margin-top:14px"><label class="f">نشاط جديد<input name="t" required maxlength="60"></label><label class="f">النوع<select name="k"><option>صفي</option><option>لاصفي</option><option>أسري</option><option>مجتمعي</option></select></label><label class="f" style="grid-column:1/-1">الوصف<textarea name="d" required maxlength="200"></textarea></label><button class="btn sm" style="grid-column:1/-1">إضافة إلى المكتبة</button></form>`;
+}
+
+function manageTab() {
+  const ids = new Set(scope().map(s => s.id)), who = s => esc((stuById(s) || {}).n || '—');
+  const stCh = st => `<span class="chip ${st === 'approved' || st === 'معتمدة' || st === 'تحولت إلى نشاط' ? 'ok' : st === 'rejected' ? 'need' : 'wait'}">${({approved: 'معتمد', pending: 'بانتظار المراجعة', rejected: 'مرفوض', needs: 'يحتاج استكمال'})[st] || esc(st)}</span>`;
+  const del = (kind, id, label) => `<button class="btn sm ghost" data-act="delItem" data-kind="${kind}" data-k="${id}" aria-label="حذف ${label}">${ic('x', 16)} حذف</button>`;
+  const row = (txt, meta, kind, id) => `<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line);align-items:flex-start"><div style="flex:1 1 240px">${txt}<div class="tiny muted">${meta}</div></div>${del(kind, id, '')}</div>`;
+  const sec = (title, arr) => `<details class="card" style="margin-bottom:12px" ${arr.length ? 'open' : ''}><summary style="cursor:pointer;min-height:40px"><b>${title}</b> <span class="chip">${AR(arr.length)}</span></summary>${arr.join('') || `<p class="muted small">لا توجد مشاركات.</p>`}</details>`;
+  const byRole = b => ({student: 'طالبة', parent: 'ولي أمر', teacher: 'معلمة'})[b] || esc(b || '');
+  const fams = {}; S.invites.filter(i => ids.has(i.sid)).forEach(i => { (fams[i.sid] = fams[i.sid] || {inv: [], notes: []}).inv.push(i); });
+  S.notes.filter(n => ids.has(n.sid)).forEach(n => { (fams[n.sid] = fams[n.sid] || {inv: [], notes: []}).notes.push(n); });
+  Object.keys(S.P).filter(id => ids.has(id) && Object.values(S.P[id]).some(p => p.fp.family)).forEach(id => { fams[id] = fams[id] || {inv: [], notes: []}; });
+  return `<div class="notice" style="margin-bottom:12px">احذفي أي مشاركة غير مناسبة. الحذف نهائي ولا يمكن التراجع عنه، ويُسجَّل في سجل العمليات.</div>
+  ${sec('مشاركات الجدارية', S.mural.map(m => row(`<span class="chip">${VBY[m.vid] ? VBY[m.vid].n : ''}</span> ${esc(m.text)}`, `${stCh(m.status)} · ${esc(clsName(m.cls))} · ${hijri(new Date(m.at))}`, 'post', m.id)))}
+  ${sec('مجلس القيم', S.council.map(c => row(esc(c.text), `${stCh(c.status)} · ${byRole(c.by)} · ${hijri(new Date(c.at))}`, 'post', c.id)))}
+  ${sec('بنك الأفكار', S.ideas.map(i => row(esc(i.text), `${stCh(i.status)} · ${esc(i.by)}`, 'post', i.id)))}
+  ${sec('مبادرات السفيرات', S.inits.map(i => row(`<b>${esc(i.t || '')}</b> — ${esc(i.goals || '')}`, `${stCh(i.status)} · ${who(i.by)}`, 'post', i.id)))}
+  ${sec('الشواهد', S.evidence.filter(e => ids.has(e.sid)).sort((a, b) => b.at - a.at).map(e => row(`<span class="chip">${VBY[e.vid].n}</span> ${esc(e.text)}`, `${stCh(e.status)} · ${who(e.sid)} · ${esc(e.type)}${e.path || e.file ? ' · مرفق' : ''}`, 'evidence', e.id)))}
+  <details class="card" open><summary style="cursor:pointer;min-height:40px"><b>أولياء الأمور</b> <span class="chip">${AR(Object.keys(fams).length)}</span></summary>
+   <p class="small muted">لا يملك ولي الأمر حسابًا؛ مشاركته رابط دعوة وملاحظات وبصمة أسرة مرتبطة بابنته. «إلغاء مشاركة ولي الأمر» يعطّل روابط الدعوة، ويحذف ملاحظاته واستباناته، ويسحب بصمة الأسرة.</p>
+   ${Object.entries(fams).map(([sid, f]) => `<div class="res"><div class="row"><b>ولي أمر ${who(sid)}</b><span class="chip">${AR(f.inv.length)} رابط</span><span class="chip">${AR(f.notes.length)} ملاحظة</span><span class="sp"></span><button class="btn sm danger" data-act="delItem" data-kind="parent" data-k="${sid}">${ic('x', 16)} إلغاء مشاركة ولي الأمر</button></div>
+     ${f.notes.map(n => row(`<span class="chip">${VBY[n.vid] ? VBY[n.vid].n : ''}</span> ${esc(n.text)}`, hijri(new Date(n.at)), 'note', n.id)).join('')}</div>`).join('') || '<p class="muted small">لا توجد مشاركات لأولياء الأمور.</p>'}</details>`;
 }
 
 /* ===== الموجهة الطلابية ===== */
@@ -3306,6 +3330,24 @@ const ACT = {
     if (a.filter(x => x > 0).length < 3) toast('ملاحظة: أقل من ثلاث إجابات صالحة؛ لن تُحتسب في المتوسط');
     S.M = S.M.filter(m => !(m.sid === sid && m.vid === vid && m.ph === ph && m.src === src)); S.M.push({id: uid('m'), sid, vid, ph, src, a: a.slice(0, 5), at: Date.now()}); audit('ملاحظة ' + (src === 'family' ? 'أسرية' : 'معلمة')); after(); toast('حُفظت الملاحظة'); },
   defClasses: () => { let n = 0; DEFAULT_CLASSES.forEach(c => { if (!S.classes.some(x => x.sch === S.school && x.n === c)) { S.classes.push({id: uid('c'), n: c, sch: S.school}); n++; } }); audit('إضافة الفصول الافتراضية'); after(); toast('أُضيف ' + AR(n) + ' فصلًا'); },
+  delItem: el => { const kind = el.dataset.kind, id = el.dataset.k; const lbl = {post: 'هذه المشاركة', evidence: 'هذا الشاهد ومرفقه', note: 'هذه الملاحظة', parent: 'مشاركة ولي الأمر: روابط الدعوة والملاحظات والاستبانات وبصمة الأسرة'}[kind];
+    modal('تأكيد الحذف', `<p>سيُحذف ${lbl} نهائيًا.</p><div class="row"><button class="btn danger" data-act="delItemOk" data-kind="${kind}" data-k="${id}">${ic('x')} نعم، احذفي</button><button class="btn ghost" data-act="close">إلغاء</button></div>`); },
+  delItemOk: el => { const kind = el.dataset.kind, id = el.dataset.k; closeTop();
+    if (kind === 'post') ['mural', 'council', 'ideas', 'inits'].forEach(k => { S[k] = S[k].filter(x => x.id !== id); });
+    else if (kind === 'evidence') S.evidence = S.evidence.filter(x => x.id !== id);
+    else if (kind === 'note') S.notes = S.notes.filter(x => x.id !== id);
+    else if (kind === 'parent') { S.invites = S.invites.filter(i => i.sid !== id); S.notes = S.notes.filter(n => n.sid !== id); S.M = S.M.filter(m => !(m.sid === id && m.src === 'family')); Object.values(S.P[id] || {}).forEach(p => { p.fp.family = false; p.st[6] = p.famAlt === 'approved'; }); }
+    audit('حذف: ' + kind); persist(); render(); toast('تم الحذف'); },
+  delCls: el => { const c = S.classes.find(x => x.id === el.dataset.k); if (!c) return; const n = S.students.filter(s => s.cls === c.id).length;
+    modal('حذف فصل', `<p>حذف فصل <b>${esc(c.n)}</b> (${AR(n)} طالبة).</p><div class="grid"><button class="btn" data-act="delClsOk" data-k="${c.id}" data-all="0">حذف الفصل فقط، وتبقى طالباته «بلا فصل»</button>${n ? `<button class="btn danger" data-act="delClsOk" data-k="${c.id}" data-all="1">${ic('x')} حذف الفصل مع طالباته وكل بياناتهن</button>` : ''}<button class="btn ghost" data-act="close">إلغاء</button></div><p class="tiny muted" style="margin-top:8px">حذف الطالبات لا يمكن التراجع عنه.</p>`); },
+  delClsOk: el => { const id = el.dataset.k, all = el.dataset.all === '1', c = S.classes.find(x => x.id === id);
+    const ids = S.students.filter(s => s.cls === id).map(s => s.id);
+    if (all) { S.students = S.students.filter(s => !ids.includes(s.id)); ids.forEach(x => delete S.P[x]); S.M = S.M.filter(m => !ids.includes(m.sid)); S.evidence = S.evidence.filter(e => !ids.includes(e.sid)); }
+    else S.students.forEach(s => { if (s.cls === id) s.cls = ''; });
+    S.classes = S.classes.filter(x => x.id !== id); if (UI.stuF === id) UI.stuF = '';
+    audit('حذف فصل ' + (c ? c.n : '') + (all ? ' مع طالباته' : '')); closeTop(); after(); toast(all ? 'حُذف الفصل وطالباته' : 'حُذف الفصل'); },
+  delStu: el => { const s = stuById(el.dataset.k); if (!s) return; modal('حذف طالبة', `<p>سيُحذف حساب <b>${esc(s.n)}</b> وكل بياناتها: الرحلة والقياسات والشواهد والبصمات، ويتوقف رمز دخولها. لا يمكن التراجع.</p><div class="row"><button class="btn danger" data-act="delStuOk" data-k="${s.id}">${ic('x')} نعم، احذفيها</button><button class="btn ghost" data-act="close">إلغاء</button></div>`); },
+  delStuOk: el => { const id = el.dataset.k, s = stuById(id); S.students = S.students.filter(x => x.id !== id); delete S.P[id]; S.M = S.M.filter(m => m.sid !== id); S.evidence = S.evidence.filter(e => e.sid !== id); audit('حذف طالبة: ' + (s ? s.n : '')); closeTop(); after(); toast('حُذفت الطالبة'); },
   tour: () => tour(0)
 };
 const TOUR = [['مرحبًا بك في غَرْس 360','منصة تحول القيم إلى ممارسات. هذه جولة قصيرة.'],['مدينة غَرْس','في «العوالم» تسع بوابات، لكل قيمة عالم بتسع مراحل.'],['شجرة الأثر','تنمو شجرتك بإنجازاتك الفعلية المعتمدة.'],['البصمات الأربع','الطالبة والأسرة والمدرسة والاستدامة.'],['تبديل الدور','للتجربة: بدّلي الدور من أعلى الصفحة لرؤية بوابات الأسرة والمعلمة والقيادة.']];
@@ -3390,6 +3432,7 @@ document.addEventListener('change', e => {
   if (c === 'toolSt') { S.tools.find(x => x.vid === el.dataset.k).st = v; audit('تحكيم أداة'); return after(); }
   if (c === 'ideaSt') { S.ideas.find(x => x.id === el.dataset.k).status = v; return after(); }
   if (c === 'riskSt') { S.risks[+el.dataset.k].st = v; return after(); }
+  if (c === 'stuF') { UI.stuF = v; return render(); }
   if (c === 'stuCls') { const s = stuById(el.dataset.k); if (s && v) { s.cls = v; audit('نقل طالبة إلى ' + clsName(v)); after(); toast('نُقلت ' + s.n.split(' ')[0] + ' إلى ' + clsName(v)); } return; }
   if (c === 'names') { S.settings.showNamesOnMural = el.checked; return after(); }
 });
@@ -3503,7 +3546,7 @@ function snapshot() {
   S.ideas.forEach(x => { st['i' + x.id] = x.status; });
   return {P, st, ev: Object.fromEntries(S.evidence.map(e => [e.id, e.status + '|' + e.fb])), meta: JSON.stringify([S.d21[S.me] || null, S.capsule[S.me] || null]),
     rep: Object.fromEntries(S.inits.filter(i => i.by === S.me).map(i => [i.id, (i.ben || 0) + '|' + (i.report || '')])),
-    set: JSON.stringify(settingsDoc()), name: (curSchool() || {}).name, cls: Object.fromEntries(S.students.map(s => [s.id, s.cls || '']))};
+    set: JSON.stringify(settingsDoc()), name: (curSchool() || {}).name, cls: Object.fromEntries(S.students.map(s => [s.id, s.cls || ''])), clsIds: S.classes.map(c => c.id)};
 }
 async function push() {
   if (!SNAP) return;
@@ -3528,6 +3571,8 @@ async function push() {
   } else if (isStaffRole()) {
     const sid = S.school;
     newOf(S.classes).forEach(c => calls.unshift(() => rq(sb.from('gh_classes').insert({id: (c.id = crypto.randomUUID()), school_id: sid, name: c.n}))));
+    Object.keys(SNAP.cls).filter(id => isUUID(id) && !S.students.some(s => s.id === id)).forEach(id => calls.unshift(() => rq(sb.from('gh_students').delete().eq('id', id))));
+    SNAP.clsIds.filter(id => isUUID(id) && !S.classes.some(c => c.id === id)).forEach(id => calls.push(() => rq(sb.from('gh_classes').delete().eq('id', id))));
     S.students.filter(s => isUUID(s.id) && SNAP.cls[s.id] !== undefined && SNAP.cls[s.id] !== (s.cls || '') && isUUID(s.cls)).forEach(s => calls.push(() => rq(sb.from('gh_students').update({class_id: s.cls}).eq('id', s.id))));
     newOf(S.students).forEach(s => calls.push(() => rq(sb.from('gh_students').insert({school_id: sid, class_id: isUUID(s.cls) ? s.cls : null, name: s.n}))));
     S.evidence.filter(e => isUUID(e.id) && SNAP.ev[e.id] !== e.status + '|' + e.fb && e.status !== 'pending').forEach(e => calls.push(() => rq(sb.rpc('gh_review', {p_id: e.id, p_status: e.status, p_fb: e.fb}))));
@@ -3587,7 +3632,7 @@ function vUsersCard() {
 async function evFile(path) { try { const r = await rq(sb.storage.from('gh-evidence').createSignedUrl(path, 600)); const a = document.createElement('a'); a.href = r.signedUrl; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); } catch (e) { toast(lerr(e)); } }
 function codesDoc() {
   const by = {}; scope().forEach(s => (by[s.cls] = by[s.cls] || []).push(s)); const u = linkFor('login');
-  const body = `<h1>بطاقات دخول الطالبات</h1><p style="text-align:center">رابط المنصة: <span style="direction:ltr">${esc(u)}</span> — تُسلَّم كل بطاقة لصاحبتها فقط.</p>${Object.entries(by).map(([c, a]) => `<h2>${esc(clsName(c))}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${a.map(s => `<div class="keep" style="border:1px dashed #073B2D;border-radius:8px;padding:8px;display:flex;gap:10px;align-items:center">${qrSVG(u, 74)}<div><b>${esc(s.n)}</b><br>رمز الدخول: <b style="font-size:16pt;letter-spacing:2px;direction:ltr;display:inline-block">${esc(s.code || '')}</b></div></div>`).join('')}</div>`).join('')}`;
+  const body = `<h1>بطاقات دخول الطالبات</h1><p style="text-align:center">رابط المنصة: <span style="direction:ltr">${esc(u)}</span> — تُسلَّم كل بطاقة لصاحبتها فقط.</p>${Object.entries(by).map(([c, a]) => `<h2>${esc(c && c !== 'undefined' && c !== 'null' ? clsName(c) : 'بلا فصل')}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${a.map(s => `<div class="keep" style="border:1px dashed #073B2D;border-radius:8px;padding:8px;display:flex;gap:10px;align-items:center">${qrSVG(u, 74)}<div><b>${esc(s.n)}</b><br>رمز الدخول: <b style="font-size:16pt;letter-spacing:2px;direction:ltr;display:inline-block">${esc(s.code || '')}</b></div></div>`).join('')}</div>`).join('')}`;
   return docWrap('بطاقات دخول الطالبات', body);
 }
 
@@ -3615,6 +3660,14 @@ if (LIVE) {
   ACT.altOk = el => lrun(() => rq(sb.rpc('gh_alt_ok', {p_student: el.dataset.s, p_vid: el.dataset.v})), 'اعتُمد المسار البديل');
   ACT.follow = el => { const sid = el.dataset.s, vid = el.dataset.v, day = +(($(`[data-ch="folDay"][data-k="${sid}|${vid}"]`) || {}).value || 30); return lrun(() => rq(sb.rpc('gh_follow_up', {p_student: sid, p_vid: vid, p_day: day, p_res: el.dataset.r})), 'سُجلت المتابعة'); };
   ACT.evFile = el => evFile(el.dataset.p);
+  ACT.delItemOk = async el => { const kind = el.dataset.kind, id = el.dataset.k; closeTop();
+    await lrun(async () => {
+      if (kind === 'post') await rq(sb.from('gh_posts').delete().eq('id', id));
+      else if (kind === 'evidence') { const e = S.evidence.find(x => x.id === id); if (e && e.path) { try { await sb.storage.from('gh-evidence').remove([e.path]); } catch (x) {} } await rq(sb.from('gh_evidence').delete().eq('id', id)); }
+      else if (kind === 'note') await rq(sb.from('gh_notes').delete().eq('id', id));
+      else if (kind === 'parent') await rq(sb.rpc('gh_revoke_family', {p_student: id}));
+      await rq(sb.from('gh_audit').insert({school_id: S.school, actor: S.user.id, role: S.role, action: 'حذف: ' + ({post: 'مشاركة', evidence: 'شاهد', note: 'ملاحظة أسرة', parent: 'مشاركة ولي أمر'})[kind]}));
+    }, 'تم الحذف'); };
   ACT.codes = () => docPreview('بطاقات دخول الطالبات', codesDoc(), 'بطاقات-دخول-الطالبات.html');
   ACT.readAll = async () => { if (S.role === 'student') { S.ui.readN = Date.now(); persist(); await sync(); render(); return; } lrun(() => rq(sb.from('gh_notifs').update({is_read: true}).eq('school_id', S.school).eq('is_read', false))); };
   ACT.setSchool = () => toast('لكل مدرسة حسابات منسوباتها؛ تُدار بياناتها عند الدخول بحساب تابع لها.');
