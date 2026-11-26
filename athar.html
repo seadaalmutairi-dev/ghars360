@@ -243,6 +243,7 @@ fieldset.wstep{border:0;padding:0;margin:0}fieldset.wstep legend{font-weight:700
 .chip{cursor:pointer;font-family:inherit}.list button.row{width:100%;border:0;background:none;text-align:start;cursor:pointer;font-family:inherit;color:inherit}
 
 .card .letter.sm{max-width:none;width:100%;margin:0 0 10px;text-align:start}
+main:focus,#main:focus{outline:none}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script>window.ATHAR_CONFIG={"SUPABASE_URL": "https://ecucdsdogyccdekczokj.supabase.co", "SUPABASE_ANON_KEY": "sb_publishable_GZuEu9ik3AyBQMTv_sEnjQ_fEka30hT"};</script></head><body><div id="app"></div><noscript>يتطلب تشغيل المنصة تفعيل JavaScript.</noscript><script>(function(){function mem(){var d={};return{getItem:function(k){return k in d?d[k]:null},setItem:function(k,v){d[k]=String(v)},removeItem:function(k){delete d[k]},clear:function(){d={}}}}['localStorage','sessionStorage'].forEach(function(n){try{var s=window[n];s.setItem('_t','1');s.removeItem('_t')}catch(e){try{Object.defineProperty(window,n,{value:mem(),configurable:true})}catch(e2){}}})})();
 /* QR encoder — QRCode for JavaScript, Copyright (c) 2009 Kazuhiko Arase, MIT license */
 var QRCodeLib=(function(){var M={};function req(n){n=n.replace("./","");return M[n];}
@@ -2193,7 +2194,7 @@ function vSupervisor() {
   return head('لوحة المتابعة', 'مؤشرات مجمعة ومحتوى منشور دون بيانات شخصية') + `<div class="stats">${stat(fmtP(a.ontime), 'الحضور في الوقت')}${stat(AR(inits.length), 'مبادرات منشورة')}${stat(AR(ev.length), 'شواهد منشورة')}</div>
   ${card('المبادرات', inits.length ? `<div class="list">${inits.map(i => `<a class="row" href="#/m/observatory/${i.id}"><span class="t"><b>${esc(i.title)}</b><small>${esc(INIT_ST[i.status] || '')}</small></span></a>`).join('')}</div>` : empty('لا مبادرات منشورة.'))}${card('', tiles(['observatory', 'kpis', 'reports', 'sustain', 'tree', 'deck', 'evidence']))}`;
 }
-const SEC_MODS = {ghars: ['morning', 'discipline', 'values', 'nation', 'deserve', 'teacherMark'], tamayuz: ['lab', 'fairness', 'skills', 'stars', 'treasure', 'knowledge', 'stage', 'certs', 'progressMap'], sharaka: ['voice', 'family', 'stuReport', 'appointments'], athar: ['initiatives', 'poster', 'evidence', 'portfolio', 'observatory', 'kpis', 'surveys', 'sustain', 'tree', 'rafiq', 'reports', 'file', 'deck']};
+const SEC_MODS = {ghars: ['morning', 'discipline', 'values', 'nation', 'deserve', 'teacherMark'], tamayuz: ['lab', 'fairness', 'skills', 'stars', 'treasure', 'knowledge', 'stage', 'certs', 'progressMap'], sharaka: ['voice', 'family', 'stuReport', 'appointments'], athar: ['staffFollow', 'initiatives', 'poster', 'evidence', 'portfolio', 'observatory', 'kpis', 'surveys', 'sustain', 'tree', 'rafiq', 'reports', 'file', 'deck']};
 const SEC_T = {ghars: ['غرس', 'القيم والمواطنة والانضباط والدعم والتحفيز'], tamayuz: ['تميز', 'التعلم النشط والمهارات والمشاركة والنجوم والمكافآت والتكريم'], sharaka: ['شراكة', 'صوتك مسموع والأسرة والمواعيد والتقارير الفردية'], athar: ['أثر', 'المبادرات والشواهد وقياس الأثر والتقارير والاستدامة']};
 function vSection(k) { if (!SEC_MODS[k]) return vHome(); return head(SEC_T[k][0], SEC_T[k][1], k === 'tamayuz' ? `<a class="btn gold" href="#/lesson">${ic('play', 18)} حصتي الآن</a>` : '') + tiles(SEC_MODS[k]); }
 
@@ -2333,9 +2334,9 @@ FORMS.nPledge = async f => { const o = readForm(f); const l = await DB.ins('ga_l
 ACT.nQR = el => { const u = linkFor('pledge/' + el.dataset.t); modal('رمز التعهد', `<div style="text-align:center"><a href="${esc(u)}" target="_blank" rel="noopener">${qrSVG(u, 220)}</a><p dir="ltr" style="word-break:break-all"><a href="${esc(u)}" target="_blank">${esc(u)}</a></p>${baseUrl() ? '' : '<p class="note">يعمل الرابط بعد نشر المنصة على رابطها الدائم.</p>'}</div>`); };
 
 /* ===== أنت تستحق ===== */
-mod('deserve', {t: 'أنت تستحق', s: 'ghars', ic: 'mail', d: 'رسائل وبطاقات شكر خاصة لكل ' + '{طالب|طالبة}', view() {
+mod('deserve', {t: 'أنت{ِ} {تستحق|تستحقين}', s: 'ghars', ic: 'mail', d: 'رسائل وبطاقات شكر خاصة لكل ' + '{طالب|طالبة}', view() {
   const sent = R('msg').sort((a, b) => String(b.created_at).localeCompare(a.created_at));
-  return head('أنت تستحق', 'رسائل خاصة يفتحها صاحبها في ظرف باسمه مع احتفال خفيف', isStaff() ? btn('رسالة جديدة', 'dsNew', {cls: 'pri', ic: 'mail'}) + btn('شهادة رقمية', 'certNew', {ic: 'cert'}) : '') +
+  return head('أنت{ِ} {تستحق|تستحقين}', 'رسائل خاصة يفتحها صاحبها في ظرف باسمه مع احتفال خفيف', isStaff() ? btn('رسالة جديدة', 'dsNew', {cls: 'pri', ic: 'mail'}) + btn('شهادة رقمية', 'certNew', {ic: 'cert'}) : '') +
   `<div class="stats">${stat(AR(sent.length), 'رسائل مرسلة')}${stat(AR(sent.filter(m => m.data.opened).length), 'فُتحت')}${stat(AR(new Set(sent.map(m => m.student_id)).size), STUS() + ' تلقوا تقديرًا')}${stat(AR(R('parent_msg').length), 'رسائل لأولياء الأمور')}</div>
   ${card('المرسلة', sent.length ? `<div class="list">${sent.slice(0, 60).map(m => `<div class="row"><span class="t"><b>${esc(m.data.type)} — ${esc(stuName(m.student_id))}</b><small>${esc(m.data.text)}</small></span>${m.data.opened ? badge('فُتحت', 'ok') : badge('لم تُفتح', '')}${btn('معاينة', 'dsPrev', {id: m.id, cls: 'sm'})}${m.owner === S.me.id || isAdmin() ? `<button class="ib sm" data-act="delR" data-id="${m.id}" aria-label="حذف">${ic('x', 16)}</button>` : ''}</div>`).join('')}</div>` : empty('لم تُرسل رسائل بعد.'))}
   <p class="h">الرسالة خاصة بصاحبها: ${G('{الطالب|الطالبة}')} يرى رسائله فقط عبر رمزه، ولا يمكنه رؤية رسائل غيره باختيار أسمائهم.</p>`; }});
@@ -3096,7 +3097,7 @@ ACT.yrArch = async el => { const y = S.years.find(x => x.id === el.dataset.id); 
 ACT.yrDel = el => { const y = S.years.find(x => x.id === el.dataset.id); confirmBox(`حذف العام ${AR(y.name)} نهائيًا مع كل فصوله و${STUS()} وسجلاته؟ لا يمكن التراجع. يُنصح بأخذ نسخة احتياطية أولًا.`, async () => { await DB.del('ga_years', y.id); if (S.ui.year === y.id) { S.ui.year = ''; saveUi(); } await loadSchool(); render(); }, 'حذف نهائي'); };
 
 /* ===== الفصول والطلبة ===== */
-mod('roster', {t: 'الفصول والطلبة', s: '', ic: 'users', hide: 1, roles: ['sysadmin', 'principal', 'deputy', 'teacher', 'counselor', 'activity', 'coordinator'], view() {
+mod('roster', {t: 'الفصول و{الطلاب|الطالبات}', s: '', ic: 'users', hide: 1, roles: ['sysadmin', 'principal', 'deputy', 'teacher', 'counselor', 'activity', 'coordinator'], view() {
   if (!S.year) return head('الفصول و' + STUS()) + empty('أنشئ{ي} عامًا دراسيًا أولًا.');
   const cid = UIS.rc || '', q = UIS.rq || '', list = S.students.filter(s => (!cid || s.class_id === cid) && (!q || s.name.includes(q) || s.code.includes(q.toUpperCase())));
   return head('الفصول و' + STUS(), `العام ${AR(S.year.name)}هـ · ${AR(S.classes.length)} فصل · ${AR(S.students.filter(s => s.active).length)} ${G('{طالب|طالبة}')}`, btn('إضافة ' + STUS(), 'stAdd', {cls: 'pri', ic: 'plus'}) + btn('استيراد Excel/CSV', 'stImp') + btn('بطاقات رموز الدخول', 'stCards', {cls: 'gold'}) + btn('تصدير Excel', 'stX')) +
@@ -3186,7 +3187,7 @@ mod('about', {t: 'عن المبادرة', s: '', ic: 'seed', hide: 1, sup: 1, vi
 const SN_TYPES = ['زيارة صفية', 'ملاحظة', 'شكر وتقدير', 'توجيه', 'متابعة', 'اجتماع'];
 const staffStats = uid => { const mine = k => R(k, r => r.owner === uid); const ev = mine('evidence');
   return {lessons: mine('lesson_log').length, att: mine('attendance').length, part: mine('participation').length, badges: mine('badge').length, msgs: mine('msg').length, certs: mine('cert').length, ev: ev.length, evOk: ev.filter(e => e.status === 'approved').length, inits: mine('initiative').length, last: (mine('lesson_log').map(l => l.data.date).sort().pop() || '')}; };
-mod('staffFollow', {t: 'متابعة {المعلمين|المعلمات}', s: 'athar', ic: 'users', d: 'ملف لكل {معلم|معلمة}: نشاطه وملاحظات الإدارة وزياراتها', roles: ADM, view() {
+mod('staffFollow', {t: 'متابعة {المعلمين|المعلمات}', s: 'athar', ic: 'users', d: 'ملف لكل {معلم|معلمة}: {نشاطه|نشاطها} وملاحظات الإدارة وزياراتها', roles: ADM, view() {
   const ms = S.members.filter(m => m.status === 'active' && !['supervisor'].includes(m.role));
   return head('متابعة {المعلمين|المعلمات}', 'اضغط{ي} على الاسم لفتح الملف وتسجيل زيارة أو ملاحظة تُحفظ في ملفه{ا}'.replace('ملفه{ا}', G('{ملفه|ملفها}'))) +
   card('', ms.length ? tbl(['الاسم', 'الدور', 'الحصص الموثقة', 'آخر حصة', 'الأوسمة الممنوحة', 'الشواهد', 'ملاحظات الإدارة'], ms.map(m => { const x = staffStats(m.user_id); return [`<a href="#/m/teacherFile/${m.user_id}">${esc(m.name || m.email)}</a>`, esc(G(ROLES[m.role] || '')), AR(x.lessons), x.last ? hij(x.last) : '—', AR(x.badges), AR(x.evOk) + ' / ' + AR(x.ev), AR(R('staff_note', n => n.data.to === m.user_id || n.data.about === m.user_id).length)]; })) : empty('لا أعضاء بعد.')) + `<p class="h">الأرقام من عمل كل عضو في المنصة خلال العام المختار، للمتابعة والدعم وليست تقييمًا وظيفيًا رسميًا.</p>`; }});
